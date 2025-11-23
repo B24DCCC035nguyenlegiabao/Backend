@@ -1,0 +1,16 @@
+package com.trungtam.LearningCenterApi.dto;
+
+import com.trungtam.LearningCenterApi.entity.Enrollment.CertificateStatus; // Import Enum
+import lombok.Data;
+import java.time.LocalDateTime;
+
+@Data
+public class EnrollmentHistoryDTO {
+    private Long enrollmentId; // ID của lần đăng ký
+    private String courseCode; // Mã khóa học
+    private String courseContent; // Nội dung khóa học
+    private LocalDateTime enrollmentDate;
+    private LocalDateTime courseStartDate; // Ngày bắt đầu khóa
+    private LocalDateTime courseEndDate;
+    private CertificateStatus status;
+}
