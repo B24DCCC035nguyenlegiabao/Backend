@@ -6,8 +6,10 @@ import com.trungtam.LearningCenterApi.dto.UpdateCourseRequest;
 import com.trungtam.LearningCenterApi.entity.Course;
 import com.trungtam.LearningCenterApi.exception.ResourceNotFoundException;
 import com.trungtam.LearningCenterApi.repository.CourseRepository;
+import com.trungtam.LearningCenterApi.repository.ChapterRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional; // thêm import này
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -17,6 +19,9 @@ public class CourseService {
 
     @Autowired
     private CourseRepository courseRepository;
+
+    @Autowired
+    private ChapterRepository chapterRepository; // thêm
 
     /**
      * Tạo khóa học mới
@@ -54,37 +59,37 @@ public class CourseService {
      * Cập nhật một khóa học
      */
     public CourseDTO updateCourse(Long id, UpdateCourseRequest request) {
-        // 1. Tìm Course trong DB, nếu không tìm thấy sẽ ném ra lỗi 404
         Course existingCourse = courseRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Course not found with id: " + id));
 
-        // 2. Cập nhật các trường từ request
         existingCourse.setCourseCode(request.getCourseCode());
         existingCourse.setStartDate(request.getStartDate());
         existingCourse.setEndDate(request.getEndDate());
         existingCourse.setContent(request.getContent());
 
-        // 3. Lưu lại vào DB
         Course updatedCourse = courseRepository.save(existingCourse);
-
-        // 4. Trả về DTO đã cập nhật
         return mapToDTO(updatedCourse);
     }
 
     /**
-     * Xóa một khóa học
+     * Xóa một khóa học (XÓA CẢ CHAPTERS TRƯỚC)
      */
+    @Transactional
     public void deleteCourse(Long id) {
-        // 1. Kiểm tra tồn tại trước khi xóa
-        if (!courseRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Course not found with id: " + id);
-        }
-        // 2. Xóa
+        Course course = courseRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Course not found with id: " + id));
+
+        // Xóa tất cả chapters thuộc khóa học này
+        chapterRepository.deleteByCourseId(id);
+
+        // Nếu sau này có enrollments:
+        // enrollmentRepository.deleteByCourseId(id);
+
+        // Xóa khóa học
         courseRepository.deleteById(id);
     }
 
-
-    // ----- HÀM HELPER: Chuyển đổi Entity sang DTO -----
+    // ----- HELPER -----
     private CourseDTO mapToDTO(Course course) {
         CourseDTO dto = new CourseDTO();
         dto.setId(course.getId());
@@ -94,5 +99,4 @@ public class CourseService {
         dto.setContent(course.getContent());
         return dto;
     }
-
 }

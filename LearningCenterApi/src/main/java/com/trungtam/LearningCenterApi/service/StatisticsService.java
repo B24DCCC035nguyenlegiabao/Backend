@@ -5,11 +5,13 @@ import com.trungtam.LearningCenterApi.dto.CourseStatsDTO;
 import com.trungtam.LearningCenterApi.dto.DashboardSummaryDTO;
 import com.trungtam.LearningCenterApi.entity.Course;
 import com.trungtam.LearningCenterApi.entity.Enrollment;
+import com.trungtam.LearningCenterApi.entity.CertificateStatus;
 import com.trungtam.LearningCenterApi.repository.CourseRepository;
 import com.trungtam.LearningCenterApi.repository.EnrollmentRepository;
 import com.trungtam.LearningCenterApi.repository.StudentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.Month;
@@ -43,42 +45,41 @@ public class StatisticsService {
     /**
      * HÀM 2: Thống kê khóa học theo năm (Fix lỗi 'getCourseStatsByYear')
      */
+    @Transactional(readOnly = true)
     public CourseStatsDTO getCourseStatsByYear(int year) {
         // 1. Xác định 2 mốc thời gian
         LocalDateTime startOfYear = LocalDateTime.of(year, Month.JANUARY, 1, 0, 0);
-        LocalDateTime endOfYear = LocalDateTime.of(year, Month.DECEMBER, 31, 23, 59);
+        LocalDateTime endOfYear   = LocalDateTime.of(year, Month.DECEMBER, 31, 23, 59, 59);
 
-        // 2. Tìm tất cả khóa học trong năm đó
-        List<Course> coursesInYear = courseRepository.findByStartDateBetween(startOfYear, endOfYear);
+        // Lấy TẤT CẢ enrollments trong năm theo enrollmentDate
+        List<Enrollment> enrollmentsInYear =
+                enrollmentRepository.findByEnrollmentDateBetween(startOfYear, endOfYear);
 
-        long totalStudents = 0;
-        long totalPass = 0;
-        long totalFail = 0;
+        // Tính toán trực tiếp
+        long totalStudents = enrollmentsInYear.size();
 
-        // 3. Duyệt qua từng khóa học để lấy thông tin đăng ký
-        for (Course course : coursesInYear) {
-            // Lấy danh sách enrollment của khóa học (đảm bảo Course entity có @OneToMany)
-            Set<Enrollment> enrollments = course.getEnrollments();
-            totalStudents += enrollments.size();
+        long totalPass = enrollmentsInYear.stream()
+                .filter(e -> e.getStatus() == CertificateStatus.PASS)
+                .count();
 
-            totalPass += enrollments.stream()
-                    .filter(e -> e.getStatus() == Enrollment.CertificateStatus.PASS)
-                    .count();
+        long totalFail = enrollmentsInYear.stream()
+                .filter(e -> e.getStatus() == CertificateStatus.FAIL)
+                .count();
+        long totalInProgress = enrollmentsInYear.stream()
+                .filter(e -> e.getStatus() == CertificateStatus.IN_PROGRESS)
+                .count();
+        long totalPending = enrollmentsInYear.stream()
+                .filter(e -> e.getStatus() == CertificateStatus.PENDING)
+                .count();
 
-            totalFail += enrollments.stream()
-                    .filter(e -> e.getStatus() == Enrollment.CertificateStatus.FAIL)
-                    .count();
-        }
+        // Đếm số khóa học duy nhất có enrollment trong năm
+        long totalCourses = enrollmentsInYear.stream()
+                .map(e -> e.getCourse().getId()) // Cần FETCH course nếu dùng JOIN FETCH ở trên
+                .distinct()
+                .count();
 
-        // 4. Tạo DTO trả về
-        CourseStatsDTO stats = new CourseStatsDTO();
-        stats.setYear(year);
-        stats.setTotalCourses(coursesInYear.size());
-        stats.setTotalStudentsEnrolled(totalStudents);
-        stats.setTotalPass(totalPass);
-        stats.setTotalFail(totalFail);
-
-        return stats;
+        return new CourseStatsDTO(year, totalCourses, totalStudents,
+                totalPending, totalInProgress, totalPass, totalFail);
     }
 
     /**
@@ -88,7 +89,7 @@ public class StatisticsService {
         long totalStudents = studentRepository.count();
         long totalCourses = courseRepository.count();
         long totalEnrollments = enrollmentRepository.count();
-        long pendingCertificates = enrollmentRepository.countByStatus(Enrollment.CertificateStatus.PENDING);
+        long pendingCertificates = enrollmentRepository.countByStatus(CertificateStatus.PENDING);
 
         DashboardSummaryDTO summary = new DashboardSummaryDTO();
         summary.setTotalStudents(totalStudents);

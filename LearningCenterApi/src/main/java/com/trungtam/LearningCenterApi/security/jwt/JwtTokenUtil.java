@@ -12,6 +12,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
+import org.springframework.security.core.GrantedAuthority;
+import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Component
@@ -56,6 +59,10 @@ public class JwtTokenUtil {
         Map<String, Object> claims = new HashMap<>();
         // (Có thể thêm claims khác, ví dụ: role)
         // claims.put("role", userDetails.getAuthorities());
+        List<String> authorities = userDetails.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toList());
+        claims.put("authorities", authorities);
 
         return Jwts.builder()
                 .setClaims(claims)
@@ -72,7 +79,7 @@ public class JwtTokenUtil {
         return claimsResolver.apply(claims);
     }
 
-    private Claims extractAllClaims(String token) {
+    public Claims extractAllClaims(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(getSignInKey())
                 .build()

@@ -28,4 +28,8 @@ public class Course {
     // 1 Khóa học có Nhiều lượt đăng ký
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Set<Enrollment> enrollments;
+
+    // 1 Khóa học có Nhiều chương
+    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Set<Chapter> chapters;
 }

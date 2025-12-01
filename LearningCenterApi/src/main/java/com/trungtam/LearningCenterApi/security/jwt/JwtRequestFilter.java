@@ -67,6 +67,18 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             // 5. Validate token (Sử dụng tên hàm validateToken)
             if (jwtTokenUtil.validateToken(jwtToken, userDetails)) {
 
+
+                // 6. ĐỌC AUTHORITIES TỪ JWT TOKEN (không dùng từ DB nữa)
+                io.jsonwebtoken.Claims claims = jwtTokenUtil.extractAllClaims(jwtToken);
+                @SuppressWarnings("unchecked")
+                java.util.List<String> authoritiesList = claims.get("authorities", java.util.List.class);
+
+                java.util.List<org.springframework.security.core.GrantedAuthority> authorities =
+                        authoritiesList.stream()
+                                .map(org.springframework.security.core.authority.SimpleGrantedAuthority::new)
+                                .collect(java.util.stream.Collectors.toList());
+
+
                 // 6. Tự tay tạo 1 đối tượng Authentication
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());

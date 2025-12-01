@@ -1,6 +1,7 @@
 package com.trungtam.LearningCenterApi.security.oauth2;
 
 import com.trungtam.LearningCenterApi.entity.User;
+import com.trungtam.LearningCenterApi.entity.Provider;
 import com.trungtam.LearningCenterApi.repository.UserRepository;
 import com.trungtam.LearningCenterApi.security.jwt.JwtTokenUtil;
 import jakarta.servlet.http.HttpServletRequest;
@@ -83,15 +84,15 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
         user.setUsername(email);
         user.setPassword(null); // Mật khẩu là null vì dùng Social Login
         user.setRole("ROLE_USER");
-        user.setProvider(User.Provider.valueOf(providerName));
+        user.setProvider(Provider.valueOf(providerName));
         user.setProviderId(providerId);
 
         return userRepository.save(user);
     }
 
     private User updateExistingUser(User existingUser, String providerName, String providerId) {
-        if (existingUser.getProvider() == null || existingUser.getProvider() == User.Provider.LOCAL) {
-            existingUser.setProvider(User.Provider.valueOf(providerName));
+        if (existingUser.getProvider() == null || existingUser.getProvider() == Provider.LOCAL) {
+            existingUser.setProvider(Provider.valueOf(providerName));
             existingUser.setProviderId(providerId);
             // user.setRole(existingUser.getRole()); // Giữ vai trò cũ
             return userRepository.save(existingUser);

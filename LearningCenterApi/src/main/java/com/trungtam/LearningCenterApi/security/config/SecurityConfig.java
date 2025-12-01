@@ -28,13 +28,10 @@ public class SecurityConfig {
     @Autowired private JwtRequestFilter jwtRequestFilter;
     @Autowired private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 
-    // Khai báo các thành phần OAuth2
+
     @Autowired private CustomOAuth2UserService customOAuth2UserService;
     @Autowired private OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
 
-    // ----------------------------------------------------
-    // Các Bean cơ bản của Spring Security
-    // ----------------------------------------------------
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -46,9 +43,6 @@ public class SecurityConfig {
         return authenticationConfiguration.getAuthenticationManager();
     }
 
-    // ----------------------------------------------------
-    // Cấu hình chuỗi lọc Security
-    // ----------------------------------------------------
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {

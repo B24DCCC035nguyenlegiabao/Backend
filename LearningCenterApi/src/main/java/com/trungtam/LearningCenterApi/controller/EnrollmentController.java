@@ -5,6 +5,7 @@ import com.trungtam.LearningCenterApi.dto.EnrollmentDTO;
 import com.trungtam.LearningCenterApi.dto.EnrollRequest;
 import com.trungtam.LearningCenterApi.dto.IssueCertificateRequest;
 import com.trungtam.LearningCenterApi.dto.EnrollmentHistoryDTO;
+import com.trungtam.LearningCenterApi.dto.ChapterCompletionRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -35,7 +36,7 @@ public class EnrollmentController {
      * API Cấp chứng chỉ cho một lần đăng ký
      */
     @PutMapping("/enrollments/{enrollmentId}/certificate")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('STAFF')") // Admin hoặc nhân viên
+    @PreAuthorize("hasRole('ADMIN')") // Chỉ ADMIN (gộp STAFF vào ADMIN theo phương án B)
     public ResponseEntity<EnrollmentDTO> issueCertificate(
             @PathVariable Long enrollmentId,
             @Valid @RequestBody IssueCertificateRequest request
@@ -53,5 +54,34 @@ public class EnrollmentController {
     ) {
         List<EnrollmentHistoryDTO> history = enrollmentService.getStudentHistory(studentId);
         return ResponseEntity.ok(history);
+    }
+    @PutMapping("/enrollments/{enrollmentId}/start")
+    @PreAuthorize("hasRole('ADMIN')") // Chỉ ADMIN mới được bắt đầu khóa học (gộp STAFF -> ADMIN)
+    public ResponseEntity<EnrollmentDTO> startEnrollment(
+            @PathVariable Long enrollmentId
+    ) {
+        EnrollmentDTO updatedEnrollment = enrollmentService.startCourse(enrollmentId);
+        return ResponseEntity.ok(updatedEnrollment);
+    }
+
+    // Người dùng đánh dấu hoàn thành 1 chương (user)
+    @PostMapping("/enrollments/complete-chapter")
+    public ResponseEntity<EnrollmentDTO> completeChapter(@Valid @RequestBody ChapterCompletionRequest request) {
+        EnrollmentDTO dto = enrollmentService.markChapterComplete(request.getEnrollmentId(), request.getChapterId());
+        return ResponseEntity.ok(dto);
+    }
+
+    @GetMapping("/enrollments/{enrollmentId}/progress")
+    public ResponseEntity<java.util.List<com.trungtam.LearningCenterApi.dto.ChapterProgressDTO>> getEnrollmentProgress(
+            @PathVariable Long enrollmentId
+    ) {
+        java.util.List<com.trungtam.LearningCenterApi.dto.ChapterProgressDTO> progress = enrollmentService.getEnrollmentProgress(enrollmentId);
+        return ResponseEntity.ok(progress);
+    }
+    @GetMapping("/enrollments")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<EnrollmentDTO>> getAllEnrollments() {
+        List<EnrollmentDTO> enrollments = enrollmentService.getAllEnrollments();
+        return ResponseEntity.ok(enrollments);
     }
 }

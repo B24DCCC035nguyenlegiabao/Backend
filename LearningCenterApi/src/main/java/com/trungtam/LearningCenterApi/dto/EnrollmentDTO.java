@@ -1,5 +1,5 @@
 package com.trungtam.LearningCenterApi.dto;
-import com.trungtam.LearningCenterApi.entity.Enrollment.CertificateStatus; // Giả sử bạn có Entity này
+import com.trungtam.LearningCenterApi.entity.CertificateStatus; // Giả sử bạn có Enum này
 import lombok.Data;
 import java.time.LocalDateTime;
 

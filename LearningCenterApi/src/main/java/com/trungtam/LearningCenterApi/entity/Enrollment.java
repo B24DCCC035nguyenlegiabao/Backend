@@ -7,11 +7,6 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "enrollments")
 public class Enrollment {
-    public enum CertificateStatus {
-        PENDING, // Mới đăng ký
-        PASS,    // Đạt
-        FAIL     // Không đạt
-    }
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ID") // Khớp tên cột "ID"
@@ -32,6 +27,5 @@ public class Enrollment {
 
     @Enumerated(EnumType.STRING) // Lưu chữ "PASS", "FAIL" vào DB
     @Column(name = "TrangThaiChungChi", nullable = false) // Khớp "TrangThaiChungChi"
-    private CertificateStatus status = CertificateStatus.PENDING;
+    private CertificateStatus status = CertificateStatus.IN_PROGRESS;
 }
-

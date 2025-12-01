@@ -31,9 +31,6 @@ public class User implements UserDetails {
 
     private String providerId; // Spring sẽ tự map sang cột 'provider_id'
 
-    public enum Provider {
-        LOCAL, GOOGLE, FACEBOOK
-    }
 
     // --- Các phương thức của UserDetails (Giữ nguyên) ---
     @Override

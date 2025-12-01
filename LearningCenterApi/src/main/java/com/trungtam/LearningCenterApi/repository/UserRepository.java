@@ -1,6 +1,7 @@
 package com.trungtam.LearningCenterApi.repository;
 
 import com.trungtam.LearningCenterApi.entity.User;
+import com.trungtam.LearningCenterApi.entity.Provider;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -19,5 +20,5 @@ public interface UserRepository extends JpaRepository<User, Long> {
     // tìm không thấy user (trả về Optional.empty thay vì null)
 
     // Find by provider and providerId (for OAuth2 users)
-    Optional<User> findByProviderAndProviderId(User.Provider provider, String providerId);
+    Optional<User> findByProviderAndProviderId(Provider provider, String providerId);
 }

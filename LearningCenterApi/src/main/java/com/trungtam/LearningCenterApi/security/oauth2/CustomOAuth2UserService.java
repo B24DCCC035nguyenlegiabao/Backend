@@ -1,6 +1,7 @@
 package com.trungtam.LearningCenterApi.security.oauth2;
 
 import com.trungtam.LearningCenterApi.entity.User;
+import com.trungtam.LearningCenterApi.entity.Provider;
 import com.trungtam.LearningCenterApi.repository.UserRepository;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
@@ -47,9 +48,9 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
             name = (String) attributes.get("name");
         }
 
-        User.Provider provider = User.Provider.LOCAL;
-        if ("google".equalsIgnoreCase(registrationId)) provider = User.Provider.GOOGLE;
-        if ("facebook".equalsIgnoreCase(registrationId)) provider = User.Provider.FACEBOOK;
+        Provider provider = Provider.LOCAL;
+        if ("google".equalsIgnoreCase(registrationId)) provider = Provider.GOOGLE;
+        if ("facebook".equalsIgnoreCase(registrationId)) provider = Provider.FACEBOOK;
 
         // find existing user by provider + providerId
         Optional<User> userOpt = userRepository.findByProviderAndProviderId(provider, providerId);
@@ -71,7 +72,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
                 user.setPassword(""); // no local password
                 user.setProvider(provider);
                 user.setProviderId(providerId);
-                user.setRole("ROLE_STAFF");
+                user.setRole("ROLE_USER");
                 userRepository.save(user);
             }
         }
@@ -80,4 +81,3 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
         return new DefaultOAuth2User(user.getAuthorities(), attributes, "id");
     }
 }
-

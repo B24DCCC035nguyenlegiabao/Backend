@@ -5,6 +5,7 @@ import com.trungtam.LearningCenterApi.dto.LoginRequest;
 import com.trungtam.LearningCenterApi.dto.JwtResponse;
 import com.trungtam.LearningCenterApi.dto.RegisterRequest; // Lỗi 1: Phải tạo file này
 import com.trungtam.LearningCenterApi.entity.User;
+import com.trungtam.LearningCenterApi.entity.Provider;
 import com.trungtam.LearningCenterApi.repository.UserRepository;
 import com.trungtam.LearningCenterApi.security.jwt.JwtTokenUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,8 +75,8 @@ public class AuthService {
         user.setUsername(registerRequest.getUsername());
         user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
 
-        user.setRole("ROLE_STAFF"); // Gán quyền mặc định (bạn có thể đổi thành ROLE_USER)
-        user.setProvider(User.Provider.LOCAL); // Đánh dấu đây là tài khoản local
+        user.setRole("ROLE_USER"); // Gán quyền mặc định (giảm STAFF -> USER)
+        user.setProvider(Provider.LOCAL); // Đánh dấu đây là tài khoản local
 
         return userRepository.save(user);
     }
